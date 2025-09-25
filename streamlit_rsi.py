@@ -47,8 +47,13 @@ if st.button("Tính RSI"):
     for interval in intervals:
         df = get_klines(symbol, interval)
         df["RSI"] = calculate_rsi(df["close"])
-        rsi_latest = round(df["RSI"].iloc[-1], 2)
-        results[interval] = rsi_latest
+        df = df.dropna(subset=["RSI"])  # tránh lỗi NaN
+    
+        if not df.empty:
+            rsi_latest = round(df["RSI"].iloc[-1], 2)
+            results[interval] = rsi_latest
+        else:
+            results[interval] = "N/A"
 
     st.subheader(f"✅ RSI(14) hiện tại của {symbol}")
     for interval, rsi_val in results.items():
@@ -80,3 +85,4 @@ if st.button("Tính RSI"):
     fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
     fig_rsi.update_layout(title=f"RSI(14) - {symbol} ({chosen_interval})", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_rsi, use_container_width=True)
+
