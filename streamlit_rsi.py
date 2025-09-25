@@ -6,8 +6,8 @@ import plotly.graph_objects as go
 
 # ===== Hàm lấy dữ liệu từ Binance =====
 from binance.client import Client
-# ===== Kết nối client (không cần API key cho dữ liệu public) =====
-client = Client()
+client = Client("", "", {"verify": True, "timeout": 20})
+client.API_URL = "https://api.binance.us/api"   # mirror domain (ít khi bị chặn hơn)
 
 # ===== Hàm lấy dữ liệu Kline =====
 def get_klines(symbol="BTCUSDT", interval="1h", limit=200):
@@ -93,6 +93,7 @@ if st.button("Tính RSI"):
     fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
     fig_rsi.update_layout(title=f"RSI(14) - {symbol} ({chosen_interval})", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_rsi, use_container_width=True)
+
 
 
 
