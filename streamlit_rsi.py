@@ -5,22 +5,26 @@ import requests
 import plotly.graph_objects as go
 
 # ===== Hàm lấy dữ liệu từ Binance =====
-def get_klines(symbol, interval, limit=200):
-    url = "https://api.binance.com/api/v3/klines"
-    params = {"symbol": symbol, "interval": interval, "limit": limit}
-    response = requests.get(url, params=params)
-    data = response.json()
-    df = pd.DataFrame(data, columns=[
-        "time", "open", "high", "low", "close", "volume",
-        "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore"
-    ])
-    df["time"] = pd.to_datetime(df["time"], unit="ms")
-    df["open"] = df["open"].astype(float)
-    df["high"] = df["high"].astype(float)
-    df["low"] = df["low"].astype(float)
-    df["close"] = df["close"].astype(float)
-    df["volume"] = df["volume"].astype(float)
-    return df
+def get_klines(symbol, interval, limit=100):
+    url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+        df = pd.DataFrame(data, columns=[
+            "timestamp","open","high","low","close","volume",
+            "close_time","quote_asset_volume","number_of_trades",
+            "taker_buy_base","taker_buy_quote","ignore"
+        ])
+        df["close"] = df["close"].astype(float)
+        return df
+    except Exception as e:
+        st.error(f"Lỗi gọi Binance API: {e}")
+        return pd.DataFrame()
+
 
 # ===== Hàm tính RSI =====
 def calculate_rsi(series, period=14):
@@ -85,4 +89,5 @@ if st.button("Tính RSI"):
     fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
     fig_rsi.update_layout(title=f"RSI(14) - {symbol} ({chosen_interval})", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_rsi, use_container_width=True)
+
 
