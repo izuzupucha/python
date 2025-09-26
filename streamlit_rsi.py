@@ -98,9 +98,13 @@ if st.button("Tính RSI"):
 
     for interval in intervals:
         df = get_klines_bybit(symbol, interval)
+        if df.empty or "close" not in df.columns:
+            results[interval] = "N/A"
+            continue
+        
         df["RSI"] = calculate_rsi(df["close"])
         df = df.dropna(subset=["RSI"])  # tránh lỗi NaN
-    
+            
         if not df.empty:
             rsi_latest = round(df["RSI"].iloc[-1], 2)
             results[interval] = rsi_latest
