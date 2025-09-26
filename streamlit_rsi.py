@@ -30,6 +30,50 @@ def get_klines(symbol="BTCUSDT", interval="1h", limit=200):
         return pd.DataFrame()
 
 
+def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"):
+    url = "https://api.bybit.com/v5/market/kline"
+    params = {
+        "category": category,   # "spot" hoặc "linear"
+        "symbol": symbol,
+        "interval": interval,   # "1"=1m, "5"=5m, "15"=15m, "60"=1h, "240"=4h, "D"=1d
+        "limit": limit
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()  # nếu HTTP status != 200 → raise error
+        data = response.json()
+
+        if "result" not in data or "list" not in data["result"]:
+            raise ValueError(f"Phản hồi API Bybit không hợp lệ: {data}")
+
+        # Bybit trả list theo thứ tự mới nhất → cũ nhất, ta đảo ngược lại
+        kline_data = data["result"]["list"][::-1]
+
+        df = pd.DataFrame(kline_data, columns=[
+            "time", "open", "high", "low", "close", "volume", "turnover"
+        ])
+
+        # Convert kiểu dữ liệu
+        df["time"] = pd.to_datetime(df["time"].astype(int), unit="s")  # timestamp = giây
+        df[["open", "high", "low", "close", "volume"]] = df[["open", "high", "low", "close", "volume"]].astype(float)
+
+        return df
+
+    except requests.exceptions.Timeout:
+        print("⏰ Lỗi: Kết nối API Bybit quá thời gian chờ")
+        return pd.DataFrame()
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Lỗi khi gọi API Bybit: {e}")
+        return pd.DataFrame()
+
+    except Exception as e:
+        print(f"⚠️ Lỗi không xác định: {e}")
+        return pd.DataFrame()
+
+
+
 # ===== Hàm tính RSI =====
 def calculate_rsi(series, period=14):
     delta = series.diff()
@@ -53,7 +97,7 @@ if st.button("Tính RSI"):
     results = {}
 
     for interval in intervals:
-        df = get_klines(symbol, interval)
+        df = get_klines_bybit(symbol, interval)
         df["RSI"] = calculate_rsi(df["close"])
         df = df.dropna(subset=["RSI"])  # tránh lỗi NaN
     
