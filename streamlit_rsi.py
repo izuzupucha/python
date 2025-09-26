@@ -42,9 +42,9 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
 
     try:
         response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()  # nếu HTTP status != 200 → raise error
+        response.raise_for_status()
         data = response.json()
-        pdb.set_trace()
+
         if "result" not in data or "list" not in data["result"]:
             raise ValueError(f"Phản hồi API Bybit không hợp lệ: {data}")
 
@@ -56,22 +56,22 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
         ])
 
         # Convert kiểu dữ liệu
-        df["time"] = pd.to_datetime(df["time"].astype(int), unit="s")  # timestamp = giây
-        df[["open", "high", "low", "close", "volume"]] = df[["open", "high", "low", "close", "volume"]].astype(float)
+        df["time"] = pd.to_datetime(df["time"].astype(int), unit="s")
+        df[["open", "high", "low", "close", "volume"]] = df[
+            ["open", "high", "low", "close", "volume"]
+        ].astype(float)
 
-        return df, data
+        return df, data   # ✅ luôn trả 2 giá trị
 
     except requests.exceptions.Timeout:
-        print("⏰ Lỗi: Kết nối API Bybit quá thời gian chờ")
-        return pd.DataFrame()
+        return pd.DataFrame(), {"error": "⏰ Kết nối API Bybit quá thời gian chờ"}
 
     except requests.exceptions.RequestException as e:
-        print(f"❌ Lỗi khi gọi API Bybit: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(), {"error": f"❌ Lỗi khi gọi API Bybit: {e}"}
 
     except Exception as e:
-        print(f"⚠️ Lỗi không xác định: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(), {"error": f"⚠️ Lỗi không xác định: {e}"}
+
 
 
 
