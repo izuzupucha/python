@@ -15,8 +15,8 @@ import plotly.graph_objects as go
         # Gọi API qua python-binance
 #        klines = client.get_klines(symbol=symbol, interval=interval, limit=limit)
 #        df = pd.DataFrame(klines, columns=[
-            "time", "open", "high", "low", "close", "volume",
-            "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore"
+#            "time", "open", "high", "low", "close", "volume",
+#            "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore"
 #        ])
 #        df["time"] = pd.to_datetime(df["time"], unit="ms")
 #        df["open"] = df["open"].astype(float)
