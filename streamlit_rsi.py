@@ -44,6 +44,11 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()  # nếu HTTP status != 200 → raise error
         data = response.json()
+        
+        # Debug ngay trên app Streamlit
+        st.subheader("📦 Debug API Raw Response")
+        st.json(data)   # hiển thị JSON đẹp
+
         pdb.set_trace()
         if "result" not in data or "list" not in data["result"]:
             raise ValueError(f"Phản hồi API Bybit không hợp lệ: {data}")
