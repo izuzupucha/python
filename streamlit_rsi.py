@@ -5,29 +5,29 @@ import requests
 import plotly.graph_objects as go
 
 # ===== Hàm lấy dữ liệu từ Binance =====
-from binance.client import Client
-client = Client("", "", {"verify": True, "timeout": 20})
-client.API_URL = "https://api.binance.us/api"   # mirror domain (ít khi bị chặn hơn)
+#from binance.client import Client
+#client = Client("", "", {"verify": True, "timeout": 20})
+#client.API_URL = "https://api.binance.us/api"   # mirror domain (ít khi bị chặn hơn)
 
 # ===== Hàm lấy dữ liệu Kline =====
-def get_klines(symbol="BTCUSDT", interval="1h", limit=200):
-    try:
+#def get_klines(symbol="BTCUSDT", interval="1h", limit=200):
+#    try:
         # Gọi API qua python-binance
-        klines = client.get_klines(symbol=symbol, interval=interval, limit=limit)
-        df = pd.DataFrame(klines, columns=[
+#        klines = client.get_klines(symbol=symbol, interval=interval, limit=limit)
+#        df = pd.DataFrame(klines, columns=[
             "time", "open", "high", "low", "close", "volume",
             "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore"
-        ])
-        df["time"] = pd.to_datetime(df["time"], unit="ms")
-        df["open"] = df["open"].astype(float)
-        df["high"] = df["high"].astype(float)
-        df["low"] = df["low"].astype(float)
-        df["close"] = df["close"].astype(float)
-        df["volume"] = df["volume"].astype(float)
-        return df
-    except Exception as e:
-        print("❌ Lỗi khi gọi Binance:", e)
-        return pd.DataFrame()
+#        ])
+#        df["time"] = pd.to_datetime(df["time"], unit="ms")
+#        df["open"] = df["open"].astype(float)
+#        df["high"] = df["high"].astype(float)
+#        df["low"] = df["low"].astype(float)
+#        df["close"] = df["close"].astype(float)
+#        df["volume"] = df["volume"].astype(float)
+#        return df
+#    except Exception as e:
+#        print("❌ Lỗi khi gọi Binance:", e)
+#        return pd.DataFrame()
 
 
 def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"):
