@@ -44,11 +44,6 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()  # nếu HTTP status != 200 → raise error
         data = response.json()
-        
-        # Debug ngay trên app Streamlit
-        st.subheader("📦 Debug API Raw Response")
-        st.json(data)   # hiển thị JSON đẹp
-
         pdb.set_trace()
         if "result" not in data or "list" not in data["result"]:
             raise ValueError(f"Phản hồi API Bybit không hợp lệ: {data}")
@@ -64,7 +59,7 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
         df["time"] = pd.to_datetime(df["time"].astype(int), unit="s")  # timestamp = giây
         df[["open", "high", "low", "close", "volume"]] = df[["open", "high", "low", "close", "volume"]].astype(float)
 
-        return df
+        return df, data
 
     except requests.exceptions.Timeout:
         print("⏰ Lỗi: Kết nối API Bybit quá thời gian chờ")
@@ -104,6 +99,9 @@ if st.button("Tính RSI"):
 
     for interval in intervals:
         df = get_klines_bybit(symbol, interval)
+        # ✅ Debug JSON trên màn hình
+        st.subheader(f"Raw JSON {interval}")
+        st.json(raw)
         if df.empty or "close" not in df.columns:
             results[interval] = "N/A"
             continue
