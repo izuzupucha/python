@@ -30,6 +30,80 @@ import pdb
 #        print("❌ Lỗi khi gọi Binance:", e)
 #        return pd.DataFrame()
 
+BINANCE_ENDPOINTS = [
+    "https://data-api.binance.vision/api/v3/klines",
+    "https://api1.binance.com/api/v3/klines",
+    "https://api2.binance.com/api/v3/klines",
+    "https://api3.binance.com/api/v3/klines",
+    "https://api.binance.com/api/v3/klines",
+]
+
+import requests
+import pandas as pd
+import time
+import streamlit as st
+
+BINANCE_ENDPOINTS = [
+    "https://data-api.binance.vision/api/v3/klines",
+    "https://api1.binance.com/api/v3/klines",
+    "https://api2.binance.com/api/v3/klines",
+    "https://api3.binance.com/api/v3/klines",
+    "https://api.binance.com/api/v3/klines",
+]
+
+def get_klines_binance(symbol="BTCUSDT", interval="5m", limit=200, max_retries=2):
+    """
+    Lấy dữ liệu nến từ Binance, có fallback qua nhiều endpoint.
+    Trả về DataFrame với cột: time, open, high, low, close, volume
+    """
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; my-rsi-app/1.0)"}
+    params = {"symbol": symbol, "interval": interval, "limit": limit}
+    last_err = None
+
+    for base in BINANCE_ENDPOINTS:
+        url = base
+        st.write(f"🔄 Thử gọi Binance API: {url}")
+        for attempt in range(max_retries):
+            try:
+                resp = requests.get(url, params=params, headers=headers, timeout=10)
+                resp.raise_for_status()
+                data = resp.json()
+
+                if isinstance(data, list) and len(data) > 0:
+                    st.success(f"✅ Thành công từ endpoint: {url}")
+
+                    # Convert sang DataFrame
+                    df = pd.DataFrame(data, columns=[
+                        "time", "open", "high", "low", "close", "volume",
+                        "close_time", "qav", "trades", "taker_base", "taker_quote", "ignore"
+                    ])
+                    df["time"] = pd.to_datetime(df["time"], unit="ms")
+                    df[["open","high","low","close","volume"]] = df[["open","high","low","close","volume"]].astype(float)
+                    return df
+
+                else:
+                    last_err = f"Bad payload {data}"
+                    break
+
+            except requests.exceptions.Timeout:
+                last_err = "⏰ Timeout"
+                st.warning(f"⏰ Lỗi timeout {url} (attempt {attempt+1})")
+                time.sleep(1)
+
+            except requests.exceptions.RequestException as e:
+                last_err = str(e)
+                st.warning(f"⚠️ Request error {url} (attempt {attempt+1}): {e}")
+                time.sleep(1)
+
+            except Exception as e:
+                last_err = str(e)
+                st.error(f"⚠️ Lỗi không xác định tại {url}: {e}")
+                break
+
+    st.error(f"❌ Tất cả endpoint Binance đều thất bại. Lỗi cuối: {last_err}")
+    return pd.DataFrame()
+
+
 
 def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"):
     url = "https://api.bybit.com/v5/market/kline"
@@ -98,6 +172,14 @@ if st.button("Tính RSI"):
     results = {}
 
     for interval in intervals:
+        df = get_klines_binance("BTCUSDT", "1h", 200)
+
+        if not df.empty:
+            st.write("📊 Data preview:", df.head())
+        else:
+            st.error("Không lấy được dữ liệu Binance.")
+        
+        
         df, raw = get_klines_bybit(symbol, interval)
         # ✅ Debug JSON trên màn hình
         st.subheader(f"Raw JSON {interval}")
