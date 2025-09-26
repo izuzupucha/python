@@ -98,7 +98,7 @@ if st.button("Tính RSI"):
     results = {}
 
     for interval in intervals:
-        df = get_klines_bybit(symbol, interval)
+        df, raw = get_klines_bybit(symbol, interval)
         # ✅ Debug JSON trên màn hình
         st.subheader(f"Raw JSON {interval}")
         st.json(raw)
