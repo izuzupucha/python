@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import requests
 import plotly.graph_objects as go
+import pdb
 
 # ===== Hàm lấy dữ liệu từ Binance =====
 #from binance.client import Client
@@ -43,7 +44,7 @@ def get_klines_bybit(symbol="BTCUSDT", interval="60", limit=200, category="spot"
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()  # nếu HTTP status != 200 → raise error
         data = response.json()
-
+        pdb.set_trace()
         if "result" not in data or "list" not in data["result"]:
             raise ValueError(f"Phản hồi API Bybit không hợp lệ: {data}")
 
